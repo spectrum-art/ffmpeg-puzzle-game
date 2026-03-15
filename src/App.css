@@ -1,0 +1,364 @@
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #050607;
+  color: #f2ead8;
+  font-family: monospace;
+}
+
+button {
+  font: inherit;
+}
+
+.app-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at center, rgba(52, 79, 102, 0.18), transparent 38%),
+    linear-gradient(180deg, #0d1013 0%, #050607 100%);
+}
+
+.app-shell--error {
+  background:
+    radial-gradient(circle at center, rgba(117, 54, 34, 0.22), transparent 42%),
+    linear-gradient(180deg, #120d0b 0%, #050607 100%);
+}
+
+.app-crash-panel {
+  min-width: 280px;
+  padding: 18px 22px;
+  border: 1px solid rgba(181, 115, 70, 0.55);
+  background: rgba(9, 11, 12, 0.92);
+  box-shadow:
+    0 0 0 1px rgba(45, 27, 16, 0.85) inset,
+    0 14px 42px rgba(0, 0, 0, 0.45);
+  text-align: center;
+}
+
+.app-crash-panel__title,
+.app-crash-panel__body {
+  margin: 0;
+}
+
+.app-crash-panel__title {
+  color: #f0d7a5;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-crash-panel__body {
+  margin-top: 8px;
+  color: #d0c0a3;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.scene-frame {
+  position: relative;
+  flex: none;
+  z-index: 20;
+  cursor: none;
+  image-rendering: pixelated;
+}
+
+.scene-root {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 640px;
+  height: 480px;
+  transform-origin: top left;
+  image-rendering: pixelated;
+}
+
+.scene-layer,
+.scene-knob,
+.scene-slider-handle,
+.scene-reset-switch,
+.frame-counter {
+  position: absolute;
+}
+
+.scene-layer--viewport {
+  z-index: 10;
+}
+
+.scene-layer--crt {
+  z-index: 20;
+}
+
+.scene-layer--background {
+  z-index: 30;
+}
+
+.scene-layer--animation-overlay {
+  z-index: 140;
+  opacity: 0;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
+.scene-layer--animation-overlay.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.scene-knob,
+.scene-slider-handle,
+.scene-reset-switch {
+  z-index: 40;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: none;
+  touch-action: none;
+}
+
+.scene-layer--frame-count {
+  z-index: 50;
+}
+
+.scene-layer--led {
+  z-index: 55;
+}
+
+.scene-layer--color-chip {
+  z-index: 56;
+  border: 1px solid rgba(13, 18, 18, 0.8);
+  background: var(--color-chip-color);
+  box-shadow:
+    0 0 0 1px rgba(205, 214, 198, 0.08) inset,
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 0 6px color-mix(in srgb, var(--color-chip-color) 38%, transparent);
+}
+
+.scene-layer--hover {
+  z-index: 60;
+  pointer-events: none;
+}
+
+.scene-layer--cursor {
+  z-index: 70;
+  pointer-events: none;
+}
+
+.scene-cursor {
+  opacity: 0;
+}
+
+.scene-cursor.is-visible {
+  opacity: 1;
+}
+
+.scene-sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.scene-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.scene-viewport__canvas,
+.scene-viewport__overlay,
+.scene-viewport__loading {
+  position: absolute;
+  inset: 0;
+}
+
+.scene-viewport__canvas,
+.scene-viewport__overlay {
+  width: 100%;
+  height: 100%;
+}
+
+.scene-viewport__canvas {
+  display: block;
+  background: transparent;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+.scene-viewport__overlay {
+  pointer-events: none;
+}
+
+.scene-viewport__loading {
+  display: grid;
+  place-items: center;
+  background: rgba(2, 4, 5, 0.4);
+}
+
+.scene-viewport__loading-dots {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.scene-viewport__loading-dots span {
+  width: 8px;
+  height: 8px;
+  border: 1px solid #815834;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #fff1c7, #df7743 60%, #7c2218 100%);
+  animation: pulse 1.2s infinite ease-in-out;
+}
+
+.scene-viewport__loading-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.scene-viewport__loading-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.frame-counter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 42px;
+  height: 18px;
+  pointer-events: none;
+}
+
+.frame-counter__digit {
+  position: relative;
+  width: 8px;
+  height: 14px;
+}
+
+.frame-counter__segment {
+  position: absolute;
+  background: rgba(82, 27, 16, 0.5);
+}
+
+.frame-counter__segment.is-on {
+  background: linear-gradient(180deg, #fff1bf, #ff7c46 52%, #d64c2c 100%);
+  box-shadow: 0 0 3px rgba(255, 129, 77, 0.45);
+}
+
+.frame-counter__segment--a,
+.frame-counter__segment--d,
+.frame-counter__segment--g {
+  left: 2px;
+  width: 4px;
+  height: 1px;
+}
+
+.frame-counter__segment--a {
+  top: 0;
+}
+
+.frame-counter__segment--g {
+  top: 6px;
+}
+
+.frame-counter__segment--d {
+  bottom: 0;
+}
+
+.frame-counter__segment--b,
+.frame-counter__segment--c,
+.frame-counter__segment--e,
+.frame-counter__segment--f {
+  width: 1px;
+  height: 5px;
+}
+
+.frame-counter__segment--b,
+.frame-counter__segment--c {
+  right: 0;
+}
+
+.frame-counter__segment--e,
+.frame-counter__segment--f {
+  left: 0;
+}
+
+.frame-counter__segment--f,
+.frame-counter__segment--b {
+  top: 1px;
+}
+
+.frame-counter__segment--e,
+.frame-counter__segment--c {
+  bottom: 1px;
+}
+
+.scene-knob img,
+.scene-slider-handle img {
+  width: 100%;
+  height: 100%;
+}
+
+.scene-knob:disabled,
+.scene-slider-handle:disabled {
+  opacity: 0.5;
+}
+
+.scene-reset-switch {
+  border-radius: 0;
+}
+
+.hover-outline {
+  fill: none;
+  stroke: #ffdd3c;
+  stroke-width: 2;
+  shape-rendering: crispEdges;
+}
+
+.scene-cursor {
+  width: 32px;
+  height: 32px;
+}
+
+.scene-status {
+  position: absolute;
+  inset: auto auto 0 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(0.84);
+    opacity: 0.55;
+  }
+
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

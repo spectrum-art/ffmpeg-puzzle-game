@@ -1,0 +1,413 @@
+project:
+  name: ffmpeg_puzzle_mvp_ui
+  scene_base_resolution:
+    width: 640
+    height: 480
+  scaling_rules:
+    scene_scales_uniformly: true
+    preserve_aspect_ratio: true
+    nearest_neighbor_scaling: true
+    no_antialiasing: true
+    integer_scene_coordinates_only: true
+    hitboxes_scale_with_scene: true
+
+render_stack:
+  # back to front
+  - ffmpeg_render
+  - ghost_overlay
+  - crt_glass_overlay
+  - background_plate
+  - interactive_controls
+  - led_state_overlay
+  - hover_outline_overlay
+  - cursor
+
+interaction_rules:
+  topmost_interactive_element_wins: true
+  cursor_changes_on_hover: false
+  custom_cursor_enabled: true
+  knob_interaction:
+    method: vertical_drag
+    mouse_wheel_enabled: false
+    circular_drag_enabled: false
+    continue_drag_outside_hitbox: true
+  slider_interaction:
+    method: horizontal_drag
+    continue_drag_outside_hitbox: true
+
+quantization:
+  phase_1_knobs:
+    detent_degrees: 30
+  phase_3_knobs:
+    detent_degrees: 45
+    dead_zone:
+      location: bottom
+      size_degrees: 45
+    discrete_positions_per_channel: 6
+  sliders:
+    quantized: true
+    values_defined_per_control: true
+
+assets:
+  - id: bg_console
+    file: bg_console_640x480.png
+    category: static_background
+    role: full-screen machine background plate with bezel and transparent CRT aperture
+    scene_rect:
+      x: 0
+      y: 0
+      width: 640
+      height: 480
+    alpha: true
+    scaling: nearest
+    z_layer: background_plate
+    interactive: false
+    notes:
+      - contains all 100% opaque machine art
+      - contains transparent aperture for FFmpeg render to show through
+      - contains baked inner shadow around CRT opening
+      - frame counter housing is baked into this asset
+      - off-state machine art may be included where appropriate unless explicitly stateful elsewhere
+
+  - id: crt_glass_overlay
+    file: crt_glass_overlay.png
+    category: overlay
+    role: subtle CRT glass/reflection layer over FFmpeg render
+    scene_rect:
+      x: 232
+      y: 85
+      width: 260
+      height: 260
+    alpha: true
+    scaling: nearest
+    z_layer: crt_glass_overlay
+    interactive: false
+    notes:
+      - sits above FFmpeg render and ghost overlay
+      - sits below background plate
+      - no scanlines for MVP
+      - subtle only; may include reflection, mild edge darkening, slight glass feel
+
+  - id: knob_1_phase_1
+    file: knob_phase_1.png
+    category: interactive_sprite
+    role: rotary knob sprite for phase 1 controls
+    scene_rect:
+      x: 110
+      y: 74
+      width: 31
+      height: 31
+    center_point:
+      x: 125.5
+      y: 89.5
+    hit_radius: 15
+    alpha: true
+    scaling: nearest
+    z_layer: interactive_controls
+    interactive: true
+    interaction_type: knob
+    state_mapping:
+      value_source: existing_phase_1_knob_logic
+      visual_rotation_quantized: true
+      detent_degrees: 30
+    notes:
+      - square 1:1 sprite
+      - rotates around exact center
+      - transparent padding allowed / encouraged to avoid clipping
+      - pointer / indicator baked into sprite
+
+  - id: knob_2_phase_1
+    file: knob_phase_1.png
+    scene_rect:
+      x: 110
+      y: 116
+    center_point:
+      x: 125.5
+      y: 131.5
+
+  - id: knob_3_phase_1
+    file: knob_phase_1.png
+    scene_rect:
+      x: 110
+      y: 159
+    center_point:
+      x: 125.5
+      y: 174.5
+
+  - id: knob_1_phase_3
+    file: knob_phase_3.png
+    category: interactive_sprite
+    role: rotary knob sprite for Red value color control
+    scene_rect:
+      x: 406
+      y: 413
+      width: 27
+      height: 27
+    center_point:
+      x: 419.5
+      y: 426.5
+    hit_radius: 13
+    alpha: true
+    scaling: nearest
+    z_layer: interactive_controls
+    interactive: true
+    interaction_type: knob
+    state_mapping:
+      value_source: existing_phase_3_knob_logic
+      visual_rotation_quantized: true
+      detent_degrees: 45
+      dead_zone:
+        location: bottom
+        size_degrees: 45
+      discrete_positions: 6
+    notes:
+      - square 1:1 sprite
+      - rotates around exact center
+      - transparent padding allowed / encouraged
+      - bottom dead zone means one 45-degree segment has no valid color position
+
+  - id: knob_2_phase_3
+    file: knob_phase_3.png
+    category: interactive_sprite
+    role: rotary knob sprite for Green value color control
+    scene_rect:
+      x: 440
+      y: 413
+    center_point:
+      x: 453.5
+      y: 426.5
+
+  - id: knob_3_phase_3
+    file: knob_phase_3.png
+    category: interactive_sprite
+    role: rotary knob sprite for Blue value color control
+    scene_rect:
+      x: 475
+      y: 413
+    center_point:
+      x: 488.5
+      y: 426.5
+
+  - id: slider_handle_1
+    file: slider_handle.png
+    category: interactive_sprite
+    role: reusable horizontal slider handle
+    scene_rect:
+      x: 93
+      y: 408
+      width: 20
+      height: 17
+    alpha: true
+    scaling: nearest
+    z_layer: interactive_controls
+    interactive: true
+    interaction_type: slider_handle
+    movement:
+      axis: x
+      track_start_x: 93
+      track_end_x: 218
+    quantization:
+      enabled: true
+      discrete_values: various
+    notes:
+      - handle moves horizontally only
+      - movement clamped to track bounds
+      - discrete values vary by slider and should map to existing logic
+
+  - id: slider_handle_2
+    file: slider_handle.png
+    scene_rect:
+      x: 93
+      y: 428
+    movement:
+      track_start_x: 93
+      track_end_x: 218
+
+  - id: slider_handle_3
+    file: slider_handle.png
+    scene_rect:
+      x: 93
+      y: 448
+    movement:
+      track_start_x: 93
+      track_end_x: 218
+
+  - id: slider_handle_4
+    file: slider_handle.png
+    scene_rect:
+      x: 250
+      y: 408
+    movement:
+      track_start_x: 250
+      track_end_x: 375
+
+  - id: slider_handle_5
+    scene_rect:
+      x: 250
+      y: 428
+    movement:
+      track_start_x: 250
+      track_end_x: 375
+
+  - id: slider_handle_6
+    file: slider_handle.png
+    scene_rect:
+      x: 250
+      y: 448
+    movement:
+      track_start_x: 250
+      track_end_x: 375
+
+  - id: led_state_0
+    file: led_state_0.png
+    category: state_overlay
+    role: calibration indicator lights, 0 lit
+    scene_rect:
+      x: 325
+      y: 357
+      width: 96
+      height: 20
+    alpha: false
+    scaling: nearest
+    z_layer: led_state_overlay
+    interactive: false
+    notes:
+      - includes dark/off state and any surrounding glow treatment for 0-lit state
+      - positioned exactly over background LED housing region
+
+  - id: led_state_1
+    file: led_state_1.png
+    category: state_overlay
+    role: calibration indicator lights, 1 lit
+    scene_rect:
+      x: 325
+      y: 357
+      width: 96
+      height: 20
+    alpha: false
+    scaling: nearest
+    z_layer: led_state_overlay
+    interactive: false
+    notes:
+      - includes surrounding glow pixels if desired
+      - aligned identically to led_state_0
+
+  - id: led_state_2
+    file: led_state_2.png
+    category: state_overlay
+    role: calibration indicator lights, 2 lit
+    scene_rect:
+      x: 325
+      y: 357
+      width: 96
+      height: 20
+    alpha: false
+    scaling: nearest
+    z_layer: led_state_overlay
+    interactive: false
+    notes:
+      - aligned identically to other LED state assets
+
+  - id: led_state_3
+    file: led_state_3.png
+    category: state_overlay
+    role: calibration indicator lights, 3 lit
+    scene_rect:
+      x: 325
+      y: 357
+      width: 96
+      height: 20
+    alpha: false
+    scaling: nearest
+    z_layer: led_state_overlay
+    interactive: false
+    notes:
+      - aligned identically to other LED state assets
+
+  - id: cursor_main
+    file: cursor_main.png
+    category: cursor
+    role: bespoke in-game cursor
+    scene_rect:
+      width: 32
+      height: 32
+    hotspot:
+      x: 2
+      y: 2
+    alpha: true
+    scaling: nearest
+    z_layer: cursor
+    interactive: false
+    notes:
+      - custom cursor replaces default browser cursor
+      - should be authored at source-resolution style, then scaled cleanly
+      - yes: nearest-neighbor / no antialiasing applies here too
+      - hotspot must be explicitly defined
+
+  - id: hover_outline_square
+    file: null
+    category: generated_overlay
+    role: pixel-perfect hover outline for rectangular interactive elements
+    generated_in_code: true
+    color: yellow
+    stroke_width_scene_px: 2
+    z_layer: hover_outline_overlay
+    interactive: false
+    notes:
+      - drawn in scene coordinates before scaling
+      - no antialiasing
+      - used for slider handles and any rectangular controls
+
+  - id: hover_outline_circle
+    file: null
+    category: generated_overlay
+    role: pixel-perfect hover outline for circular interactive elements
+    generated_in_code: true
+    color: yellow
+    stroke_width_scene_px: 2
+    z_layer: hover_outline_overlay
+    interactive: false
+    notes:
+      - drawn in scene coordinates before scaling
+      - no antialiasing
+      - used for knob hover states
+      - remains unrotated even while underlying knob sprite rotates
+
+dynamic_regions:
+  - id: ffmpeg_viewport
+    role: live FFmpeg render region
+    scene_rect:
+      x: 237
+      y: 90
+      width: 250
+      height: 250
+    z_layer: ffmpeg_render
+    notes:
+      - rectangular render region
+      - shown through transparent aperture in background plate
+      - pixelated scaling only
+      - no drop shadow
+
+  - id: ghost_overlay
+    role: puzzle hint / ghost silhouettes
+    scene_rect:
+      x: 237
+      y: 90
+      width: 250
+      height: 250
+    z_layer: ghost_overlay
+    notes:
+      - sits above FFmpeg render
+      - sits below CRT glass overlay
+      - belongs visually to the screen content, not the surrounding UI
+
+  - id: frame_count
+    role: live count of frames rendered
+    scene_rect:
+      x: 504
+      y: 13
+      width: 42
+      height: 18
+    z_layer: led_state_overlay
+    notes:
+      - in-fiction 7-segment display

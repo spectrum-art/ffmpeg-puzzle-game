@@ -1,0 +1,48 @@
+:root {
+  color-scheme: dark;
+  font-family: var(--font-body);
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --color-paper: #f4efdf;
+  --color-muted: #b0b8b6;
+  --color-cyan: #51d3c0;
+  --color-gold: #f3cf75;
+  --color-night: #081011;
+  --font-display: 'Silkscreen', cursive;
+  --font-body: 'IBM Plex Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: #050403;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  color: var(--color-paper);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button:disabled,
+input:disabled {
+  cursor: not-allowed;
+}
+
+#root {
+  min-height: 100vh;
+}
