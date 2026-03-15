@@ -158,9 +158,12 @@ function App() {
   const cursorRef = useRef<HTMLImageElement | null>(null)
   const introStartedRef = useRef(false)
   const introCanFadeRef = useRef(false)
+  const introFlashShownRef = useRef(false)
   const outroStartedRef = useRef(false)
+  const previousStageRef = useRef<PuzzleStage>(currentStage)
   const playbackVersionRef = useRef(0)
   const playbackResolveRef = useRef<(() => void) | null>(null)
+  const phaseFlashTimersRef = useRef<number[]>([])
   const [hoveredControlId, setHoveredControlId] = useState<string | null>(null)
   const [cursorVisible, setCursorVisible] = useState(false)
   const [consoleGif, setConsoleGif] = useState<DecodedGif | null>(null)
@@ -169,6 +172,8 @@ function App() {
   const [overlayFrameIndex, setOverlayFrameIndex] = useState(0)
   const [overlayOpacity, setOverlayOpacity] = useState(1)
   const [introComplete, setIntroComplete] = useState(false)
+  const [phaseFlashControlIds, setPhaseFlashControlIds] = useState<string[]>([])
+  const [phaseFlashVisible, setPhaseFlashVisible] = useState(false)
 
   const targetColor = getTargetBackgroundColor(targets.color)
   const targetColorText = `rgb(${targetColor.join(', ')})`
@@ -213,10 +218,50 @@ function App() {
   }
 
   const hoverTarget = getHoverTarget(hoveredControlId, puzzleState)
+  const phaseFlashTargets =
+    phaseFlashVisible
+      ? phaseFlashControlIds
+          .map((controlId) => getHoverTarget(controlId, puzzleState))
+          .filter((target): target is HoverTarget => target !== null)
+      : []
 
   useEffect(() => {
     introCanFadeRef.current = engineStatus === 'ready' && frame !== null
   }, [engineStatus, frame])
+
+  const clearPhaseFlashTimers = useCallback(() => {
+    phaseFlashTimersRef.current.forEach((timer) => {
+      window.clearTimeout(timer)
+    })
+    phaseFlashTimersRef.current = []
+  }, [])
+
+  const triggerPhaseFlash = useCallback(
+    (stage: PuzzleStage) => {
+      const controlIds = getPhaseControlIds(stage)
+      if (controlIds.length === 0) {
+        return
+      }
+
+      clearPhaseFlashTimers()
+      setPhaseFlashControlIds(controlIds)
+      setPhaseFlashVisible(true)
+
+      phaseFlashTimersRef.current = [
+        window.setTimeout(() => {
+          setPhaseFlashVisible(false)
+        }, 250),
+        window.setTimeout(() => {
+          setPhaseFlashVisible(true)
+        }, 500),
+        window.setTimeout(() => {
+          setPhaseFlashVisible(false)
+          setPhaseFlashControlIds([])
+        }, 750),
+      ]
+    },
+    [clearPhaseFlashTimers],
+  )
 
   const playOverlaySequence = useCallback(async (
     source: OverlaySource,
@@ -309,6 +354,44 @@ function App() {
       window.clearTimeout(timer)
     }
   }, [currentStage, startOutroSequence])
+
+  useEffect(() => {
+    if (!introComplete) {
+      previousStageRef.current = currentStage
+      return
+    }
+
+    let flashTimer = 0
+
+    if (!introFlashShownRef.current) {
+      introFlashShownRef.current = true
+      flashTimer = window.setTimeout(() => {
+        triggerPhaseFlash(currentStage)
+      }, 0)
+      previousStageRef.current = currentStage
+      return () => {
+        window.clearTimeout(flashTimer)
+      }
+    }
+
+    if (previousStageRef.current !== currentStage) {
+      flashTimer = window.setTimeout(() => {
+        triggerPhaseFlash(currentStage)
+      }, 0)
+    }
+
+    previousStageRef.current = currentStage
+
+    return () => {
+      window.clearTimeout(flashTimer)
+    }
+  }, [currentStage, introComplete, triggerPhaseFlash])
+
+  useEffect(() => {
+    return () => {
+      clearPhaseFlashTimers()
+    }
+  }, [clearPhaseFlashTimers])
 
   useEffect(() => {
     if (!overlayPlayback) {
@@ -627,6 +710,26 @@ function App() {
                 className="hover-outline"
               />
             ) : null}
+            {phaseFlashTargets.map((target, index) =>
+              target.shape === 'circle' ? (
+                <circle
+                  key={`phase-circle-${index}`}
+                  cx={target.cx}
+                  cy={target.cy}
+                  r={target.r}
+                  className="hover-outline"
+                />
+              ) : (
+                <rect
+                  key={`phase-rect-${index}`}
+                  x={target.x}
+                  y={target.y}
+                  width={target.width}
+                  height={target.height}
+                  className="hover-outline"
+                />
+              ),
+            )}
           </svg>
 
           <img
@@ -1017,6 +1120,19 @@ function getHoverTarget(controlId: string | null, puzzleState: typeof INITIAL_ST
   }
 
   return null
+}
+
+function getPhaseControlIds(stage: PuzzleStage): string[] {
+  switch (stage) {
+    case 'shapes':
+      return [...PHASE_1_KNOBS.map((config) => config.id), 'line-y', 'square-y', 'rectangle-y']
+    case 'stripes':
+      return ['stripe-thickness', 'stripe-count', 'drift-speed']
+    case 'color':
+      return PHASE_3_SLIDERS.map((config) => config.id)
+    default:
+      return []
+  }
 }
 
 function getSliderOptions(key: SceneSliderConfig['key']) {
