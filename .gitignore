@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local/private project docs
+ffmpeg_puzzle_mvp_design.md
+*:Zone.Identifier
