@@ -299,6 +299,11 @@ function App() {
   }, [playOverlaySequence])
 
   useEffect(() => {
+    const bootCurtain = document.getElementById('boot-curtain')
+    bootCurtain?.remove()
+  }, [])
+
+  useEffect(() => {
     let isCancelled = false
 
     async function loadAnimations() {

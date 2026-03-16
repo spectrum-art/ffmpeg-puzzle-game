@@ -109,6 +109,7 @@ button {
 .scene-layer--animation-overlay {
   z-index: 140;
   opacity: 0;
+  background: #000;
   pointer-events: none;
   image-rendering: pixelated;
 }
